@@ -17,7 +17,7 @@ environment {
         environment{
             scannerHome = tool 'mahi-sonar-scanner' //sonnar scannar location i.e name in our jenkins tools
         }
-        withSonarQubeEnv('mahi-sonarqube-server') { //sonar server name in our jenkins system
+            withSonarQubeEnv('mahi-sonarqube-server') { //sonar server name in our jenkins system
             sh "${scannerHome}/bin/sonar-scanner"
         }
         }
