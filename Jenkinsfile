@@ -14,15 +14,15 @@ environment {
             }
         }
 
-        stage('SonarQube analysis') { //this stage is a groovy scr
-        environment{
-            scannerHome = tool 'mahi-sonar-scanner' //sonnar scannar location i.e name in our jenkins tools
-        }
-            steps{
-                withSonarQubeEnv('mahi-sonarqube-server') { //sonar server name in our jenkins system
-                    sh "${scannerHome}/bin/sonar-scanner"
-                }        
-            }
-        }
-    }   
+    stage('SonarQube analysis') { //this stage is a groovy scr
+    environment{
+        scannerHome = tool 'mahi-sonar-scanner' //sonnar scannar location i.e name in our jenkins tools
+    }
+    steps{
+    withSonarQubeEnv('mahi-sonarqube-server') { //sonar server name in our jenkins system
+        sh "${scannerHome}/bin/sonar-scanner"
+    }        
+    }
+  }
+}   
 }
