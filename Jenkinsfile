@@ -56,7 +56,7 @@ environment {
             steps {
                 script {
                     echo '<--------------- Jar Publish Started --------------->'
-                    def server = Artifactory.newServer url:registry+"/artifactory" ,  credentialsId:"artifactory_token"   //credentialsId= mahi-jfrog-token i.e. our Jgrog creds in jenkins
+                    def server = Artifactory.newServer url:registry+"/artifactory" ,  credentialsId:"mahi-jfrog-token"   //credentialsId= mahi-jfrog-token i.e. our Jgrog creds in jenkins
                     def properties = "buildid=${env.BUILD_ID},commitid=${GIT_COMMIT}"; //target means jfrog artifactory and it is in my jfrog web -->artifactory-->artifacts
                     def uploadSpec = """{          
                         "files": [
