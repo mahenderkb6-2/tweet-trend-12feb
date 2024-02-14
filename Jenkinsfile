@@ -1,3 +1,4 @@
+def registry = 'https://mahender14feb.jfrog.io' //my jfrog url
 pipeline {
     agent {
         node {
@@ -37,7 +38,7 @@ environment {
         
         stage("Quality Gate"){
             steps {
-                script {  //this is a groovy script so coverted to declarivtive script by adding steps and script lines   //googlesearch:sonar stage for jenkinsfile--2nd link--Scripted pipeline example 
+                script {  //this is a groovy script so we coverted to declarivtive script by adding steps and script lines   //googlesearch:sonar stage for jenkinsfile--2nd link--Scripted pipeline example 
                     timeout(time: 1, unit: 'HOURS') {  //here it is 1hr // Just in case something goes wrong, pipeline will be killed after a timeout
                         def qg = waitForQualityGate() //passed or failed from sonar QG // Reuse taskId previously collected by withSonarQubeEnv
                         if (qg.status != 'OK') {
@@ -49,3 +50,30 @@ environment {
         }   
     }
 }    
+
+     
+        stage("Jar Publish") {
+            steps {
+                script {
+                    echo '<--------------- Jar Publish Started --------------->'
+                    def server = Artifactory.newServer url:registry+"/artifactory" ,  credentialsId:"artifactory_token"   //credentialsId= mahi-jfrog-token i.e. our Jgrog creds in jenkins
+                    def properties = "buildid=${env.BUILD_ID},commitid=${GIT_COMMIT}"; //target means jfrog artifactory and it is in my jfrog web -->artifactory-->artifacts
+                    def uploadSpec = """{          
+                        "files": [
+                            {
+                                "pattern": "jarstaging/(*)",
+                                "target": "libs-release-local/{1}",  
+                                "flat": "false",
+                                "props" : "${properties}",
+                                "exclusions": [ "*.sha1", "*.md5"]
+                            }
+                        ]
+                    }"""
+                    def buildInfo = server.upload(uploadSpec) //uploading artifacts on to the artifact
+                    buildInfo.env.collect()
+                    server.publishBuildInfo(buildInfo)
+                    echo '<--------------- Jar Publish Ended --------------->'  
+            
+            }
+        }   
+    }   
