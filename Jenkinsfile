@@ -1,4 +1,6 @@
-def registry = 'https://mahenderb14feb.jfrog.io/' //my jfrog url
+def registry = 'https://mahenderb14feb.jfrog.io/' //my jfrog url //for "Jar Publish" stage 
+def imageName = 'mahenderb14feb.jfrog.io/mahi-docker/ttrend'    //for "Docker Build" stage //<jfrog artifact url>/<repository we're using to store our artifacts>/<name of artifact we want to give>
+def version   = '2.1.4' //for "Docker Build" //artifact version mentioned in pom.xml at line ~13
 pipeline {
     agent {
         node {
@@ -72,6 +74,29 @@ environment {
             
                 }
             }   
+        }
+        ///////////////////
+        
+        stage("Docker Build") {
+            steps {
+                script {
+                    echo '<--------------- Docker Build Started --------------->'
+                    app = docker.build(imageName+":"+version)
+                    echo '<--------------- Docker Build Ends --------------->'
+                }
+            }
+        }
+
+        stage ("Docker Publish"){
+            steps {
+                script {
+                    echo '<--------------- Docker Publish Started --------------->'  
+                    docker.withRegistry(registry, 'mahi-jfrog-token'){ //registry is a variable mentioned in 1st line for "Jar Publish" stage //"mahi-jfrog-token"=credentialsId i.e. our Jgrog creds in jenkins
+                        app.push()
+                    }    
+                    echo '<--------------- Docker Publish Ended --------------->'  
+                }
+            }
         } 
     }
 }            
