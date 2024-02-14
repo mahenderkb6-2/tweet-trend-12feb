@@ -47,11 +47,7 @@ environment {
                     }    
                 }
             }    
-        }   
-    }
-}    
-
-     
+        }
         stage("Jar Publish") {
             steps {
                 script {
@@ -74,6 +70,8 @@ environment {
                     server.publishBuildInfo(buildInfo)
                     echo '<--------------- Jar Publish Ended --------------->'  
             
-            }
-        }   
-    }   
+                }
+            }   
+        } 
+    }
+}            
