@@ -13,44 +13,49 @@ environment {
     stages {
         stage("build") {    
             steps {
-                echo "---------build started---------"
-                sh 'mvn clean deploy -Dmaven.test.skip=true'   //mvn=maven command nad maven there're 7 lifecyles,we can use any lifecyles. Here, goals are clean and deploy.
-                echo "---------build completed---------" //when deploy command is mentioned, it'll execute unit test cases as well to avoid that we're using command "-Dmaven.test.skip=true"
+                echo "<--------------- build started --------------->"
+                sh 'mvn clean deploy -Dmaven.test.skip=true'   //mvn=maven command and maven there're 7 lifecyles,we can use any lifecyles. Here, goals are clean and deploy.
+                echo "<--------------- build completed --------------->" //when deploy command is mentioned, it'll execute unit test cases as well to avoid that we're using command "-Dmaven.test.skip=true"
             }
         }
 
         stage("test") { //for unit test 
             steps {
-                echo "---------unit test started---------"
+                echo "<---------------unit test started --------------->"
                 sh 'mvn surefire-report:report'     //this command is to run unit test cases separatly.
-                echo "---------unit test completed---------"
+                echo "<--------------- unit test completed --------------->"
             }
         }
 
         stage('SonarQube analysis') { //this stage is a groovy scr //sonarqube scanner
         environment{
-            scannerHome = tool 'mahi-sonar-scanner' //sonnar scannar location i.e name in our jenkins tools
+            scannerHome = tool 'mahi-sonar-scanner' //sonar scannar location i.e name in our jenkins tools
         }
             steps{
+                echo "<--------------- SonarQube analysis started --------------->"
                 withSonarQubeEnv('mahi-sonarqube-server') { //sonar server name in our jenkins system
                 sh "${scannerHome}/bin/sonar-scanner"
+                echo "<--------------- SonarQube analysis completed --------------->"
                 }        
             }
         }
         
-        stage("Quality Gate"){
+        stage("Quality Gate"){ //to get status from sonarqube and  based on that it pass/fails the build
             steps {
                 script {  //this is a groovy script so we coverted to declarivtive script by adding steps and script lines   //googlesearch:sonar stage for jenkinsfile--2nd link--Scripted pipeline example 
+                    echo "<--------------- Quality Gate started --------------->"
                     timeout(time: 1, unit: 'HOURS') {  //here it is 1hr // Just in case something goes wrong, pipeline will be killed after a timeout
                         def qg = waitForQualityGate() //passed or failed from sonar QG // Reuse taskId previously collected by withSonarQubeEnv
                         if (qg.status != 'OK') {
                             error "Pipeline aborted due to quality gate failure: ${qg.status}"
                         }
-                    }    
+                    }
+                    echo "<--------------- Quality Gate completed --------------->"    
                 }
             }    
         }
-        stage("Jar Publish") {
+
+        stage("Jar Publish") { //it stores the jar files in jfrog artifactory
             steps {
                 script {
                     echo '<--------------- Jar Publish Started --------------->'
@@ -75,9 +80,8 @@ environment {
                 }
             }   
         }
-        ///////////////////
         
-        stage("Docker Build") {
+        stage("Docker Build") { //building image with copied files onto a container as a jar file
             steps {
                 script {
                     echo '<--------------- Docker Build Started --------------->'
@@ -87,7 +91,7 @@ environment {
             }
         }
 
-        stage ("Docker Publish"){
+        stage ("Docker Publish"){ // publish docker artifact repository in jfrog artifactory
             steps {
                 script {
                     echo '<--------------- Docker Publish Started --------------->'  
@@ -97,6 +101,17 @@ environment {
                     echo '<--------------- Docker Publish Ended --------------->'  
                 }
             }
-        } 
+        }
+
+        stage(" Deploy ") {
+            steps {
+                script {
+                    sh './deploy.sh'
+                    // echo '<--------------- Helm Deploy Started --------------->'
+                    // sh 'helm install ttrend ttrend-1.0.1.tgz'
+                    // echo '<--------------- Helm deploy Ends --------------->'
+                }
+            }
+        }  
     }
 }            
