@@ -1,10 +1,10 @@
 def registry = 'https://mahenderb14feb.jfrog.io/' //my jfrog url //for "Jar Publish" stage 
 def imageName = 'mahenderb14feb.jfrog.io/mahi-docker/ttrend'    //for "Docker Build" stage //<jfrog artifact url>/<repository we're using to store our artifacts>/<name of artifact we want to give>
-def version   = '2.1.4' //for "Docker Build" //artifact version mentioned in pom.xml at line ~13
+def version   = '2.1.5' //for "Docker Build" //artifact version mentioned in pom.xml at line ~13
 pipeline {
     agent {
         node {
-            label 'maven'
+            label 'maven' //should be same label mentioned during jenkins node creation
         }
     }
 environment {
